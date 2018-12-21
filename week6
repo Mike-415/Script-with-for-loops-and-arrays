@@ -1,0 +1,88 @@
+#!/bin/bash
+#Write a script that reads up to 25 integer values of weekly rainfall for a given city.
+#The script should then report how many values were read, then calculate the average rainfall.
+#The output of the script should display all  rainfall values followed by the amount above or below the average for each week. 
+#Finally, the script displays the smallest and largest rainfall values for the year. Please make sure to document all functions of the script and to define results as displayed
+
+weeklyRainfall=()
+totalRainfall=0
+totalWeeks=0
+averageRainfall=
+
+displayMenu(){
+	cat <<- EOF
+	Enter the weekly rainfall for a city of your choice.
+	   -You have a maximum of 25 entries 
+	   -Enter '-1' to finish entries
+	EOF
+}
+
+error(){
+	echo "$(basename "$0"): ERROR - $*" >&2 && exit 1;
+}
+
+isValid(){
+	if [[ "$1" =~ ^-?[0-9]+$ ]]; then  
+		[ "$1" -lt -1 ] && error "You cannot have a negative value less than -1";	
+	else
+		error  "You can only enter non-negative integer values";
+	fi
+	return 0;
+}
+
+getTotalRainfall(){
+	local count=0;
+	for i in ${weeklyRainfall[@]}; do
+  		count=$(( $count + $i ));
+	done
+	totalRainfall=$count;
+}
+
+getUserInput(){
+	for (( i = 1 ; i < 26 ; i++ )); do
+		read -p "Entry $i : " arg;
+		[ "$arg" = "-1" ] && break;
+		isValid $arg && weeklyRainfall+=("$arg");
+	done
+	getTotalRainfall;
+}
+
+displayComparisonWithAverage(){
+	for i in ${weeklyRainfall[@]}; do
+ 		if [ $i -gt $averageRainfall  ]; then
+			echo "$i is $(($i - $averageRainfall)) above the average";
+		elif [ $i -lt $averageRainfall ];then
+			echo "$i is $(($averageRainfall - $i)) below the average";
+		else
+			echo "$i is equal to the average";
+		fi           
+        done	
+}
+
+displayHighestAndLowestElement(){
+	local highest=${weeklyRainfall[0]};
+	local lowest=${weeklyRainfall[0]};
+	for i in ${weeklyRainfall[@]}; do
+		[ $i -lt $lowest ]  && lowest=$i;
+		[ $i -gt $highest ] && highest=$i;
+	done
+	echo -e "Lowest element: $lowest \nHighest element: $highest";
+}
+
+displayResults(){
+	echo "Number of entries: ${#weeklyRainfall[@]}";
+	averageRainfall=$(( $totalRainfall / ${#weeklyRainfall[@]} ));
+	echo "Average Rainfall: $averageRainfall";
+	displayComparisonWithAverage;
+	displayHighestAndLowestElement;
+}
+
+#MAIN
+
+clear;
+displayMenu;
+getUserInput;
+clear;
+displayResults;
+
+
